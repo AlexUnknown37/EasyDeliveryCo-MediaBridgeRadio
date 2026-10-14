@@ -2,7 +2,7 @@
 
 This BepInEx plugin routes MediaBridge's live audio through Easy Delivery Co.'s built-in custom radio channel. The game's radio source keeps its spatial audio, so the music moves with the truck and fades between inside and outside as it does for other stations.
 
-When the custom station is selected (FM 99.9 by default), left/right skip to the previous/next MediaBridge track, down toggles play/pause and pauses the truck's radio audio source, and up is ignored while MediaBridge is selected so scan cannot tune away from it. The mod attaches its stream to the currently selected custom station (FM 99.9 by default), even if the game's custom-channel loader reports a different placeholder frequency. It uses the truck radio's AudioResource so the truck plays MediaBridge audio and the HUD displays `Title - Artist`. While selected, it bypasses the game's tower signal fade on both the main radio and truck radio player so streamed music does not fade in and out.
+When the custom station is selected (FM 99.9 by default), left/right skip to the previous/next MediaBridge track, down toggles play/pause, and up is ignored while MediaBridge is selected so scan cannot tune away from it. Pause stops the radio audio sources and discards buffered stream samples. The mod attaches its stream to the currently selected custom station (FM 99.9 by default), even if the game's custom-channel loader reports a different placeholder frequency. It uses the truck radio's AudioResource so the truck plays MediaBridge audio and the HUD displays `Title - Artist`. While selected, it bypasses the game's tower signal fade on both the main radio and truck radio player so streamed music does not fade in and out.
 
 ## Requirements
 

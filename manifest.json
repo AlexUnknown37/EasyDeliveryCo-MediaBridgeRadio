@@ -1,6 +1,6 @@
 {
   "name": "EasyDeliveryCoMediaBridge",
-  "version_number": "0.1.9",
+  "version_number": "0.1.10",
   "website_url": "",
   "description": "Play MediaBridge through the truck radio; arrows skip tracks and toggle playback.",
   "dependencies": [

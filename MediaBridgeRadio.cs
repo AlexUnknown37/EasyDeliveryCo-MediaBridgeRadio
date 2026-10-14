@@ -14,7 +14,7 @@ using UnityEngine.InputSystem;
 
 namespace EasyDeliveryCoMediaBridge
 {
-    [BepInPlugin("alexunknown37.easydeliveryco.mediabridge", "MediaBridge Radio", "0.1.9")]
+    [BepInPlugin("alexunknown37.easydeliveryco.mediabridge", "MediaBridge Radio", "0.1.10")]
     public sealed class MediaBridgeRadio : BaseUnityPlugin
     {
         private const float SampleRate = 48000f;
@@ -58,7 +58,7 @@ namespace EasyDeliveryCoMediaBridge
         private float _nextChannelCheck;
         private float _lastTrackCommand = -10f;
         private int _lastHandledInputFrame = -1;
-        private bool _radioPlaybackOn = true;
+        private volatile bool _radioPlaybackOn = true;
         private bool _reportedNotRunning;
         private bool _triedLaunch;
         private bool _radioPlaybackKnown;
@@ -71,6 +71,7 @@ namespace EasyDeliveryCoMediaBridge
         private bool _reportedSignalOverride;
         private bool _reportedTruckSignalOverride;
         private string _nowPlaying = "MediaBridge";
+        private float _nextPausedEnforcement;
 
         private void Awake()
         {
@@ -152,6 +153,14 @@ namespace EasyDeliveryCoMediaBridge
                 _nextChannelCheck = Time.unscaledTime + 1f;
                 StopScanningOnCustomStation(sRadioSystem.instance);
                 AttachStreamToCustomStation();
+            }
+
+            // The game's radio update can restart its source while MediaBridge is paused.
+            // Stop it again so a pause cannot leave a second burst of buffered audio playing.
+            if (!_radioPlaybackOn && Time.unscaledTime >= _nextPausedEnforcement)
+            {
+                _nextPausedEnforcement = Time.unscaledTime + 0.1f;
+                StopMediaBridgeSources();
             }
 
         }
@@ -396,20 +405,35 @@ namespace EasyDeliveryCoMediaBridge
                 _radioPlaybackKnown = true;
             }
             _radioPlaybackOn = !_radioPlaybackOn;
+            ClearAudioBuffer();
             SendCommand(_radioPlaybackOn ? "play" : "pause");
+            if (!_radioPlaybackOn) StopMediaBridgeSources();
 
             if (radio != null && radio.source != null && radio.source.clip == _streamClip)
             {
                 if (_radioPlaybackOn)
                 {
                     radio.source.enabled = true;
-                    radio.source.UnPause();
-                    if (!radio.source.isPlaying) radio.source.Play();
+                    radio.source.Play();
                 }
-                else
-                {
-                    radio.source.Pause();
-                }
+            }
+        }
+
+        private void StopMediaBridgeSources()
+        {
+            var radio = sRadioSystem.instance;
+            if (radio != null && radio.source != null && radio.source.clip == _streamClip)
+                radio.source.Stop();
+
+            // The truck's spatial radio player can own a separate AudioSource from the
+            // station selector. Stop those too, or it can continue the last DSP-buffered
+            // audio after the selector source has stopped.
+            var players = FindObjectsByType<sRadioPlayer>(FindObjectsSortMode.None);
+            for (var i = 0; i < players.Length; i++)
+            {
+                var player = players[i];
+                if (IsCustomTruckStation(player) && player.source != null && player.source.isPlaying)
+                    player.source.Stop();
             }
         }
 
@@ -606,6 +630,11 @@ namespace EasyDeliveryCoMediaBridge
         {
             lock (_ringLock)
             {
+                if (!_radioPlaybackOn)
+                {
+                    _ringRead = _ringWrite = _ringCount = 0;
+                    return;
+                }
                 for (var i = 0; i < count; i++)
                 {
                     if (_ringCount == _ring.Length)
@@ -630,6 +659,11 @@ namespace EasyDeliveryCoMediaBridge
             }
             lock (_ringLock)
             {
+                if (!_radioPlaybackOn)
+                {
+                    _ringRead = _ringWrite = _ringCount = 0;
+                    return;
+                }
                 var count = Math.Min(data.Length, _ringCount);
                 for (var i = 0; i < count; i++)
                 {
