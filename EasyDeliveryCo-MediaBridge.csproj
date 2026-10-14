@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <NoWarn>$(NoWarn);CS0649</NoWarn>
+    <AssemblyName>EasyDeliveryCoMediaBridge</AssemblyName>
+    <RootNamespace>EasyDeliveryCoMediaBridge</RootNamespace>
+    <GameDir Condition="'$(GameDir)' == ''">D:\_Games\Steam\steamapps\common\Easy Delivery Co</GameDir>
+    <BepInExDir Condition="'$(BepInExDir)' == ''">$(GameDir)\BepInEx\core</BepInExDir>
+    <ManagedDir>$(GameDir)\EasyDeliveryCo_Data\Managed</ManagedDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="BepInEx"><HintPath>$(BepInExDir)\BepInEx.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="0Harmony"><HintPath>$(BepInExDir)\0Harmony.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Assembly-CSharp"><HintPath>$(ManagedDir)\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine"><HintPath>$(ManagedDir)\UnityEngine.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(ManagedDir)\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.InputLegacyModule"><HintPath>$(ManagedDir)\UnityEngine.InputLegacyModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.AudioModule"><HintPath>$(ManagedDir)\UnityEngine.AudioModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule"><HintPath>$(ManagedDir)\UnityEngine.JSONSerializeModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Unity.InputSystem"><HintPath>$(ManagedDir)\Unity.InputSystem.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+
+  <Target Name="CheckModReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(BepInExDir)\BepInEx.dll')" Text="BepInEx.dll not found. Install BepInEx 5 Mono x64, or pass -p:BepInExDir=..." />
+    <Error Condition="!Exists('$(BepInExDir)\0Harmony.dll')" Text="0Harmony.dll not found in BepInExDir." />
+    <Error Condition="!Exists('$(ManagedDir)\Assembly-CSharp.dll')" Text="Easy Delivery Co game assemblies not found. Pass -p:GameDir=..." />
+  </Target>
+</Project>

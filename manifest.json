@@ -1,0 +1,9 @@
+{
+  "name": "EasyDeliveryCoMediaBridge",
+  "version_number": "0.1.9",
+  "website_url": "",
+  "description": "Play MediaBridge through the truck radio; arrows skip tracks and toggle playback.",
+  "dependencies": [
+    "BepInEx-BepInExPack-5.4.2305"
+  ]
+}
